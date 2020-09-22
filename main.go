@@ -33,23 +33,23 @@ func main() {
 	for index := 0; index < len(lines); index ++ {
 		line := lines[index]
 		reg := regexp.MustCompile(fmt.Sprintf(`(\s*)%v%v`, flag, IgnoreBlockStart))
-		if isMatch := reg.MatchString(line); isMatch {
+		if reg.MatchString(line) {
 			ignoreStartIndex = index
 		} else {
 			reg = regexp.MustCompile(fmt.Sprintf(`%v%v$`, flag, IgnoreSingleLine))
-			if isMatch = reg.MatchString(line); isMatch {
+			if reg.MatchString(line) {
 				lines = append(lines[:index], lines[index+1:]...)
 				index --
 			}
-			reg = regexp.MustCompile(fmt.Sprintf(`^(\s*)%vGITREPLACE(\s+)with`, flag))
-			if isMatch = reg.MatchString(line); isMatch {
+			reg = regexp.MustCompile(fmt.Sprintf(`^(\s*)%v%v(\s+)with`, flag, GitReplace))
+			if reg.MatchString(line) {
 				lines = append(lines[:index+1], lines[index+2:]...)
 				replacedReg := regexp.MustCompile(fmt.Sprintf(`%v%v(\s+)with(\s+)`, flag, GitReplace))
 				lines[index] = replacedReg.ReplaceAllString(line, "")
 			}
 		}
 		reg = regexp.MustCompile(fmt.Sprintf(`(\s*)%v%v`, flag, IgnoreBlockEnd))
-		if isMatch := reg.MatchString(line); isMatch {
+		if reg.MatchString(line) {
 			ignoreEndtIndex = index
 			lines = append(lines[:ignoreStartIndex], lines[ignoreEndtIndex+1:]...)
 			index = index - (ignoreEndtIndex - ignoreStartIndex + 1)
@@ -77,7 +77,7 @@ func GetPipe() string {
 		log.Fatal("Please input from pipe")
 	}
 	r := bufio.NewReader(os.Stdin)
-	chunks := make([]byte, 1024)
+	str := ""
 	buf := make([]byte, 1024)
 	for {
 		n, err := r.Read(buf)
@@ -87,8 +87,8 @@ func GetPipe() string {
 		if n == 0 {
 			break
 		}
-		chunks = append(chunks, buf[:n]...)
+		str += string(buf[:n])
 	}
-	return string(chunks)
+	return str
 }
 
